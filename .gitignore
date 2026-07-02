@@ -1,1 +1,3 @@
 .claude/
+# Ignore all .claude files
+*.md

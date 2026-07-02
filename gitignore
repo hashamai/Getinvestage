@@ -1,0 +1,14 @@
+# Claude sessions
+.claude-sessions/
+claude-sessions/
+
+# If you want to ignore all session files
+*.claude-session
+*.jsonl
+# Claude generated session files
+.claude/HP-*.md
+.claude/*
+!.claude/skills/
+!.claude/skills/**
+!.claude/CLAUDE.md
+!.claude/gitignore

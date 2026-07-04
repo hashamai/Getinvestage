@@ -23,6 +23,9 @@ build/
 dist/
 *.egg-info/
 
+# Node
+node_modules/
+
 # Test and coverage files
 .pytest_cache/
 .coverage
@@ -49,3 +52,4 @@ Thumbs.db
 # Temporary files
 *.tmp
 *.bak
+.gstack/

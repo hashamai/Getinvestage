@@ -127,15 +127,18 @@ class MarketService:
 
     async def get_quote(self, symbol: str) -> dict:
         symbol = symbol.upper()
-        if self.demo_mode:
-            # No Finnhub key: try Yahoo for a real quote, synthetic as last resort.
+        # Yahoo path: always for keyless mode, and for index symbols (^GSPC,
+        # ^IXIC, …) which Finnhub's free tier doesn't quote.
+        if self.demo_mode or symbol.startswith("^"):
             async def fetch_yahoo():
                 return await self._yahoo_quote(symbol)
 
             try:
                 return await self._cached(f"quote:{symbol}", QUOTE_TTL, fetch_yahoo)
             except (UpstreamUnavailable, SymbolNotFound):
-                return demo_data.demo_quote(symbol)
+                if self.demo_mode:
+                    return demo_data.demo_quote(symbol)
+                raise
 
         async def fetch():
             data = await self._finnhub("/quote", {"symbol": symbol})

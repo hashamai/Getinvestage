@@ -16,6 +16,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from services.cache import TTLCache
 from services.market import MarketService, SymbolNotFound, UpstreamUnavailable
@@ -53,7 +54,7 @@ app = FastAPI(title="Stock Market Dashboard API", lifespan=lifespan)
 
 origins = [
     o.strip()
-    for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:5173").split(",")
+    for o in os.getenv("FRONTEND_ORIGINS", "http://localhost:5174").split(",")
     if o.strip()
 ]
 app.add_middleware(
@@ -146,3 +147,15 @@ async def indices():
             return {**entry, "quote": None}
 
     return await asyncio.gather(*(one(e) for e in INDICES))
+
+
+# Serve the built React app (getinvestage/dist) so FastAPI is the single
+# production server. Registered last: /api/* routes above take precedence.
+DIST_DIR = Path(__file__).resolve().parent.parent / "getinvestage" / "dist"
+if DIST_DIR.is_dir():
+    app.mount("/", StaticFiles(directory=DIST_DIR, html=True), name="app")
+else:
+    logger.warning(
+        "getinvestage/dist not found — API-only mode. Run `npm run build` in "
+        "getinvestage/ to serve the site from FastAPI."
+    )

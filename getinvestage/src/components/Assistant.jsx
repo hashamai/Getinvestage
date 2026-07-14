@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { generateResponse } from '../assistant';
+import { Mark } from './Mark';
 
 const microLabel = {
   fontSize: 10,
@@ -8,17 +9,18 @@ const microLabel = {
   color: 'var(--muted)',
 };
 
-const Diamond = ({ size = 7, pulse = false }) => (
+/* Message bullets stay a plain glyph — the full mark is reserved for the
+   brand lockup and the panel header, so it doesn't get diluted. */
+const Bullet = () => (
   <span
     aria-hidden="true"
     style={{
       display: 'inline-block',
-      width: size,
-      height: size,
+      width: 6,
+      height: 6,
       background: 'var(--accent)',
       transform: 'rotate(45deg)',
       flexShrink: 0,
-      animation: pulse ? 'pulseDot 2.2s ease-in-out infinite' : 'none',
     }}
   />
 );
@@ -152,7 +154,7 @@ export function Assistant({ market, selectedSymbol, initialAsk }) {
           borderBottom: '1px solid var(--hairline)',
         }}
       >
-        <Diamond pulse />
+        <Mark size={17} pulse />
         <span style={{ ...microLabel, color: 'var(--text-2)' }}>ASSISTANT</span>
         <span style={{ flex: 1 }} />
         <span style={microLabel}>grounded in live quotes</span>
@@ -163,7 +165,7 @@ export function Assistant({ market, selectedSymbol, initialAsk }) {
           m.role === 'ai' ? (
             <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
               <span style={{ paddingTop: 5 }}>
-                <Diamond size={6} />
+                <Bullet />
               </span>
               <p style={{ margin: 0, ...aiText }}>{m.text}</p>
             </div>
@@ -188,7 +190,7 @@ export function Assistant({ market, selectedSymbol, initialAsk }) {
         {typing && (
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
             <span style={{ paddingTop: 5 }}>
-              <Diamond size={6} />
+              <Bullet />
             </span>
             <TypingDots />
           </div>
@@ -197,7 +199,7 @@ export function Assistant({ market, selectedSymbol, initialAsk }) {
         {stream !== null && (
           <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
             <span style={{ paddingTop: 5 }}>
-              <Diamond size={6} />
+              <Bullet />
             </span>
             <p style={{ margin: 0, ...aiText }}>
               {stream}

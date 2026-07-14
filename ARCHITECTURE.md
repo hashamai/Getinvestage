@@ -4,7 +4,12 @@
 > the alternatives that were considered (or should have been), and what a senior engineer would
 > change on the road to a production-ready, secure, scalable system.
 >
-> Last updated: 2026-07-04 (Phase 1 codebase)
+> Last updated: 2026-07-13 (Phase 2 — auth, database, routing)
+>
+> **§1–§9 describe the Phase 1 codebase.** Auth, the database, and real routing landed after
+> they were written, so several items below are now resolved (notably S-1, S-2, ADR-13, and
+> "no tests"). **[§10](#10-update--auth-database--routing) is the current state** — read it
+> alongside anything above that touches routing, security, or the backend layout.
 
 ---
 
@@ -896,6 +901,146 @@ Nothing here is tested; for a hired-first project, tests are as much a showcase 
 | `getinvestage/src/components/Landing.jsx` | ~200 | Marketing landing page |
 | `getinvestage/src/components/AmbientCanvas.jsx` | — | Decorative canvas animation |
 | `getinvestage/vite.config.js` | 13 | Dev server + `/api` proxy |
+
+## 10. Update — Auth, Database & Routing
+
+*Phase 2. Supersedes the parts of §4, §5, §7 and ADR-13 that it touches.*
+
+### 10.1 What changed
+
+Three things landed together, because each one needed the others: **real routing** (you can't
+have a login page without a `/login` URL), **a database** (a user has to live somewhere), and
+**authentication** (a saved watchlist needs an owner).
+
+```
+                       ┌──────────────────────────────────────────┐
+                       │  React SPA — react-router-dom            │
+                       │  /  /dashboard  /login  /register        │
+                       │  /account (ProtectedRoute)               │
+                       │                                          │
+                       │  AuthProvider   access token IN MEMORY   │
+                       │  api.js         silent refresh on 401    │
+                       └────────────────┬─────────────────────────┘
+                          Bearer <access>│  + httpOnly refresh cookie
+                                         ▼
+┌──────────────────────────────────────────────────────────────────┐
+│  FastAPI (backend/main.py)                                       │
+│                                                                  │
+│  api/market.py     /api/quote|candles|search|profile|news  (open)│
+│  api/auth.py       /api/auth/register|login|refresh|logout|me    │
+│  api/watchlist.py  /api/watchlist                    (protected) │
+│  SPA fallback      any non-/api path -> index.html               │
+│                                                                  │
+│  core/  config · db · security(argon2 + JWT) · deps(current_user)│
+│  models/ User, WatchlistItem      schemas/ pydantic I/O          │
+│  services/ MarketService, TTLCache, demo_data   (unchanged)      │
+└──────────────────────┬───────────────────────────────────────────┘
+                       │ SQLAlchemy 2.0 async + Alembic
+                       ▼
+              ┌────────────────────────────┐
+              │ Postgres (Neon) in prod    │
+              │ SQLite locally (zero setup)│
+              └────────────────────────────┘
+```
+
+The `services/` layer is untouched — that separation (§4.1) is exactly what let auth land
+without market code changing a line.
+
+### 10.2 ADR-14: Own JWT auth, not a managed provider
+
+- **Context:** users need accounts to persist a watchlist. Options: Clerk/Supabase Auth (drop-in),
+  or build it.
+- **Decision:** build it. For a hired-first project the interesting part *is* the auth — hashing,
+  token lifetime, XSS/CSRF trade-offs. Outsourcing it outsources the signal.
+- **Revisit:** the moment real users need password reset, email verification, MFA, or social
+  login. Those are where a provider genuinely earns its keep, and none of them are portfolio
+  differentiators.
+
+### 10.3 ADR-15: Access token in memory, refresh token in an httpOnly cookie
+
+The security decision worth defending in an interview.
+
+| | Where | Lifetime | Readable by JS? |
+|---|---|---|---|
+| Access token | JS memory (module var in `api.js`) | 15 min | yes (unavoidable — it goes in a header) |
+| Refresh token | `httpOnly` cookie, `SameSite=Lax`, `Secure` in prod, `path=/api/auth` | 7 days | **no** |
+
+- **Why not localStorage:** it's readable by any script on the page, so one XSS bug hands an
+  attacker a working long-lived credential. The common tutorial answer is the wrong one.
+- **Why the access token in memory is acceptable:** it's short-lived and dies with the tab.
+  A page reload loses it — which is what `refreshSession()` is for: the httpOnly cookie
+  (which JS *cannot* read) silently mints a new one on boot.
+- **Why both tokens carry a `type` claim:** they're signed with the same key, so without it a
+  stolen 7-day refresh token would be accepted as an access token. `decode_token(tok, ACCESS)`
+  refuses anything that doesn't declare the type asked for. There's a test for exactly this.
+- **CSRF:** `SameSite=Lax` blocks the cross-site POST, and the cookie is scoped to `/api/auth`
+  so it isn't even sent to the data routes. A CSRF token is the belt-and-braces upgrade if the
+  cookie ever authenticates state-changing routes directly.
+
+### 10.4 ADR-16: Postgres via SQLAlchemy async, SQLite locally
+
+- **Driver is psycopg 3 (`postgresql+psycopg://`), not asyncpg** — asyncpg has no wheel for
+  Python 3.13+ and falls back to a source build needing MSVC. psycopg ships binaries and
+  SQLAlchemy drives it async just fine.
+- **Neon, not Render Postgres** — Render's free database **expires after 30 days**, which would
+  silently kill the live demo. Neon's free tier persists.
+- **One `DATABASE_URL` drives both dialects**, so `uvicorn main:app` still runs with zero setup
+  on a fresh clone (SQLite) while production is real Postgres. The cost: models must stay
+  dialect-neutral (no JSONB, no ARRAY). Worth it — first-run experience is a feature (ADR-6).
+
+### 10.5 Correctness details worth knowing
+
+- **`UniqueConstraint(user_id, symbol)`** — the duplicate-watchlist guard is in the *database*,
+  not just the route. A double-click races the route check; it cannot race the constraint. The
+  route catches `IntegrityError` and returns 409.
+- **Login is an enumeration oracle if you're careless** — unknown-email and wrong-password
+  return the identical status and message, so an attacker can't discover which emails have
+  accounts. Tested.
+- **Every watchlist query filters on `user_id`** from the token, so one user can't read or
+  delete another's rows. This is the worst possible bug in this app, so it has a dedicated test.
+- **`get_current_user` re-loads the user each request** rather than trusting the token's claim —
+  a token can outlive the account it names.
+- **Optimistic UI on the watchlist star**, with rollback on failure. A star that waits for a
+  round trip feels broken.
+
+### 10.6 Audit items now resolved
+
+| Item | Status |
+|---|---|
+| **S-1** live key in `.env.example` | ✅ Replaced with a placeholder. Verified never committed (`git log -S` clean). **Rotate the key anyway** — it sat on disk. |
+| **S-2** `.gitignore` blocks `.env.example` | ⚠️ Still true. Add `!.env.example` if you want contributors to get the template. |
+| **ADR-13** router | ✅ Done — react-router-dom, real URLs, SPA fallback in FastAPI so deep links survive a hard refresh. |
+| **Phase 1 "no tests"** | ✅ Partly — **29 backend tests** covering auth and watchlist (`backend/tests/`). Market/service tests are still the gap. |
+| **S-3** rate limiting | ❌ Still open, and now **more urgent**: `/api/auth/login` is brute-forceable. Add per-IP limits before the public deploy. |
+| **S-4** symbol validation | ❌ Still open. |
+| **S-5** security headers | ❌ Still open. |
+
+### 10.7 New file inventory
+
+| Path | Role |
+|---|---|
+| `backend/core/config.py` | Settings from env; `SECRET_KEY` resolved once per process |
+| `backend/core/db.py` | Async engine + per-request session dependency |
+| `backend/core/security.py` | argon2 hashing; JWT issue/verify with `type` claim confinement |
+| `backend/core/deps.py` | `CurrentUser`, `DbSession`, `Market` dependencies |
+| `backend/models/` | `User`, `WatchlistItem` (dialect-neutral columns) |
+| `backend/schemas/` | Pydantic request/response bodies |
+| `backend/api/` | `market.py` (open), `auth.py`, `watchlist.py` (protected) |
+| `backend/alembic/` | Migrations; env reads `DATABASE_URL` from `core.config` |
+| `backend/tests/` | 29 tests — auth + watchlist, incl. per-user isolation |
+| `getinvestage/src/api.js` | Fetch client; single-flight silent refresh on 401 |
+| `getinvestage/src/auth.jsx` | `AuthProvider`, `useAuth`, `ProtectedRoute` |
+| `getinvestage/src/wipe.jsx` | The wipe transition, now router-aware |
+| `getinvestage/src/useWatchlist.js` | Optimistic add/remove against `/api/watchlist` |
+| `getinvestage/src/routes/` | `AuthForm` (login+register), `Account`, `NotFound` |
+
+### 10.8 Next
+
+1. **Rate limiting** (`slowapi`) — login brute-force is now a live hole. Do this before deploy.
+2. **Dockerfile + Render deploy**, Neon `DATABASE_URL` + `SECRET_KEY` as env vars, `alembic upgrade head` on release.
+3. **Market/service tests** — the degradation ladder is still the best untested material in the repo.
+
+---
 
 ## Appendix B — Key Vocabulary (for interviews)
 

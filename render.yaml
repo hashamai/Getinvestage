@@ -1,0 +1,41 @@
+# Render blueprint. Commit this and Render can build the service from it.
+#
+# NOTE: there is no database block here on purpose. Render's free Postgres
+# EXPIRES AFTER 30 DAYS and takes your data with it — which, on a portfolio
+# project whose whole point is a live link a recruiter can click, is a demo
+# that dies exactly when you stop watching it. Use Neon instead (free tier
+# persists) and paste its connection string into DATABASE_URL below.
+
+services:
+  - type: web
+    name: getinvestage
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+
+    envVars:
+      # Render generates a strong value once and keeps it. Do NOT let this
+      # regenerate on each deploy: it signs every token, so a new key logs
+      # every user out.
+      - key: SECRET_KEY
+        generateValue: true
+
+      # Turns on the production guards: refresh cookie becomes Secure
+      # (HTTPS-only), and the app refuses to boot without SECRET_KEY.
+      - key: ENVIRONMENT
+        value: production
+
+      # Set these two in the Render dashboard, not here — they're secrets.
+      #
+      # DATABASE_URL — from Neon. Two edits to what Neon gives you:
+      #   1. scheme must be  postgresql+psycopg://   (not postgres://)
+      #   2. drop any ?sslmode=require  — psycopg negotiates TLS itself
+      #   e.g. postgresql+psycopg://user:pw@ep-xxx.neon.tech/neondb
+      - key: DATABASE_URL
+        sync: false
+
+      # FINNHUB_API_KEY — free at https://finnhub.io/register
+      # If omitted the app still boots, in demo mode with synthetic data.
+      - key: FINNHUB_API_KEY
+        sync: false

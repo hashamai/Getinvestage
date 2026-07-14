@@ -1,10 +1,25 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { useMarket } from './useMarket';
+import { ProtectedRoute } from './auth';
+import { useWipeNavigate } from './wipe';
 import { Landing } from './components/Landing';
 import { Dashboard } from './components/Dashboard';
+import { AuthForm } from './routes/AuthForm';
+import { Account } from './routes/Account';
+import { Analysis } from './routes/Analysis';
+import { NotFound } from './routes/NotFound';
 
 /**
- * Getinvestage — screen routing + wipe transition.
+ * Getinvestage — routes.
+ *
+ * Navigation is real URLs now (was a useState screen switch), so /dashboard is
+ * linkable, the back button works, and a hard refresh lands where you were.
+ * FastAPI serves index.html for any non-/api path so those refreshes don't 404
+ * in production — see backend/main.py.
+ *
+ * The market feed lives here, above the routes, so switching pages doesn't
+ * tear down the poller and re-request every quote.
  *
  * Tweakable props:
  *  - accentColor: '#EDEDED' (presets: white #EDEDED, gold #E8C268, blue #5B8CFF, green #4EC58F)
@@ -17,53 +32,57 @@ export default function App({
   ambientMotion = true,
 }) {
   const market = useMarket(marketTempo);
-  const [screen, setScreen] = useState('landing');
-  const [leaving, setLeaving] = useState(false);
-  const [pendingAsk, setPendingAsk] = useState(null);
-  const timersRef = useRef([]);
+  const wipeTo = useWipeNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     document.documentElement.style.setProperty('--accent', accentColor);
   }, [accentColor]);
 
-  useEffect(() => () => timersRef.current.forEach(clearTimeout), []);
-
-  const go = (target, opts = {}) => {
-    if (leaving) return;
-    setLeaving(true);
-    if (opts.ask) setPendingAsk(opts.ask);
-    if (target === 'landing') setPendingAsk(null);
-    timersRef.current.push(setTimeout(() => setScreen(target), 450));
-    timersRef.current.push(setTimeout(() => setLeaving(false), 1000));
-  };
-
   return (
     <div style={{ height: '100%', background: 'var(--bg)' }}>
-      {screen === 'landing' ? (
-        <Landing
-          instruments={market.instruments}
-          ambientMotion={ambientMotion}
-          onLaunch={(opts) => go('dashboard', opts ?? {})}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Landing
+              instruments={market.instruments}
+              ambientMotion={ambientMotion}
+              // The pending question rides along in router state instead of a
+              // parent useState, so it survives the navigation.
+              onLaunch={(opts) => wipeTo('/dashboard', { state: { ask: opts?.ask ?? null } })}
+            />
+          }
         />
-      ) : (
-        <Dashboard market={market} initialAsk={pendingAsk} onBack={() => go('landing')} />
-      )}
 
-      {leaving && (
-        <div
-          aria-hidden="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 300,
-            background: '#0d0e11',
-            borderRight: '1px solid rgba(255,255,255,0.1)',
-            transformOrigin: 'left',
-            animation: 'wipe 1s cubic-bezier(0.7, 0, 0.2, 1) forwards',
-            pointerEvents: 'none',
-          }}
+        <Route
+          path="/dashboard"
+          element={
+            <Dashboard
+              market={market}
+              initialAsk={location.state?.ask ?? null}
+              onBack={() => wipeTo('/')}
+            />
+          }
         />
-      )}
+
+        {/* Public: anyone can research a stock. Saving it needs an account. */}
+        <Route path="/analysis" element={<Analysis />} />
+
+        <Route path="/login" element={<AuthForm mode="login" />} />
+        <Route path="/register" element={<AuthForm mode="register" />} />
+
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <Account />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route path="*" element={<NotFound />} />
+      </Routes>
     </div>
   );
 }

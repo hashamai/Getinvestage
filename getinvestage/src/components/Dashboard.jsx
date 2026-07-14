@@ -1,9 +1,13 @@
 import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { fmtPct, fmtPrice } from '../useMarket';
+import { useAuth } from '../auth';
+import { useWatchlist } from '../useWatchlist';
 import { TickerTape } from './TickerTape';
 import { Watchlist } from './Watchlist';
 import { PriceChart } from './PriceChart';
 import { Assistant } from './Assistant';
+import { Mark } from './Mark';
 
 const microLabel = {
   fontSize: 10,
@@ -11,20 +15,6 @@ const microLabel = {
   textTransform: 'uppercase',
   color: 'var(--muted)',
 };
-
-const Diamond = ({ size = 9 }) => (
-  <span
-    aria-hidden="true"
-    style={{
-      display: 'inline-block',
-      width: size,
-      height: size,
-      background: 'var(--text)',
-      transform: 'rotate(45deg)',
-      flexShrink: 0,
-    }}
-  />
-);
 
 function MiniQuote({ inst }) {
   return (
@@ -46,16 +36,58 @@ function MiniQuote({ inst }) {
   );
 }
 
+/** Header slot: sign-in link, or the current user's name linking to /account. */
+function AuthNav() {
+  const { status, user } = useAuth();
+  if (status === 'loading') return null;
+
+  const base = {
+    ...microLabel,
+    flexShrink: 0,
+    textDecoration: 'none',
+    color: 'var(--text-2)',
+  };
+
+  if (status === 'anon') {
+    return (
+      <Link to="/login" style={base} title="Sign in to save a watchlist">
+        Sign in
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      to="/account"
+      style={{ ...base, maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis' }}
+      title={user?.email}
+    >
+      {user?.display_name || user?.email}
+    </Link>
+  );
+}
+
 export function Dashboard({ market, onBack, initialAsk }) {
   const [selected, setSelected] = useState('NVDA');
   const [range, setRange] = useState('1D');
+  const { isAuthed } = useAuth();
+  const watchlist = useWatchlist();
+  const navigate = useNavigate();
   const inst = market.tickers.find((t) => t.symbol === selected) ?? market.tickers[0];
 
   const statusColor = market.status.tone === 'up' ? 'var(--up)' : 'var(--amber)';
   const clock = market.now.toLocaleTimeString('en-GB', { hour12: false });
 
   const selectSymbol = (sym) => {
-    setSelected(sym);
+    // The terminal's chart is driven by useMarket's fixed instrument universe
+    // (it needs simulated history, beta, sector). A symbol found via search
+    // has none of that, and `tickers.find(...)` would fall back to tickers[0] —
+    // silently showing NVDA's chart under someone else's ticker. So anything
+    // outside the known universe goes to /analysis, which is built for
+    // arbitrary symbols and fetches real candles for them.
+    const known = market.tickers.find((t) => t.symbol === sym || t.ySym === sym);
+    if (known) setSelected(known.symbol);
+    else navigate(`/analysis?symbol=${encodeURIComponent(sym)}`);
   };
 
   return (
@@ -80,7 +112,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
         }}
       >
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-          <Diamond />
+          <Mark size={19} />
           <span style={{ fontSize: 14, fontWeight: 600 }}>getinvestage</span>
         </span>
         <span style={{ display: 'inline-flex', gap: 18, minWidth: 0, overflow: 'hidden' }}>
@@ -131,6 +163,13 @@ export function Dashboard({ market, onBack, initialAsk }) {
         >
           {clock}
         </span>
+        <Link
+          to="/analysis"
+          style={{ ...microLabel, flexShrink: 0, textDecoration: 'none', color: 'var(--text-2)' }}
+        >
+          Analysis
+        </Link>
+        <AuthNav />
         <button
           onClick={onBack}
           style={{
@@ -159,7 +198,19 @@ export function Dashboard({ market, onBack, initialAsk }) {
           overflow: 'hidden',
         }}
       >
-        <Watchlist tickers={market.tickers} selected={selected} onSelect={selectSymbol} />
+        <Watchlist
+          tickers={market.tickers}
+          selected={selected}
+          onSelect={selectSymbol}
+          canSave={isAuthed}
+          isSaved={watchlist.has}
+          // Swallow the rejection: useWatchlist already rolled the row back and
+          // set its error state, so an unhandled promise here would be noise.
+          onToggleSave={(symbol) => watchlist.toggle(symbol).catch(() => {})}
+          savedItems={watchlist.items}
+          onRemoveSaved={(symbol) => watchlist.remove(symbol).catch(() => {})}
+          isAuthed={isAuthed}
+        />
         <PriceChart inst={inst} range={range} onRangeChange={setRange} source={market.source} />
         <Assistant market={market} selectedSymbol={selected} initialAsk={initialAsk} />
       </main>

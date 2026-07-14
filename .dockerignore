@@ -1,0 +1,31 @@
+# Everything here would either bloat the image, break the build, or leak secrets.
+
+# Secrets — the image must get these from the platform's env vars, never baked in.
+**/.env
+**/.env.*
+
+# Local databases. app.db is your dev data; cache.db rebuilds itself.
+**/*.db
+**/*.sqlite3
+
+# Reinstalled inside the image for the correct platform. Copying a Windows
+# node_modules or .venv into a Linux image produces broken native binaries.
+**/node_modules
+**/.venv
+**/venv
+**/__pycache__
+**/*.pyc
+
+# Built locally; stage 1 rebuilds it from source so the image can't ship a
+# stale bundle someone forgot to rebuild.
+getinvestage/dist
+
+.git
+.gitignore
+.claude
+.gstack
+docs
+*.md
+**/.pytest_cache
+**/.vscode
+**/.idea

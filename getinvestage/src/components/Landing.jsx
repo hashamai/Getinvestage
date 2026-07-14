@@ -1,19 +1,6 @@
 import { AmbientCanvas } from './AmbientCanvas';
 import { TickerTape } from './TickerTape';
-
-const Diamond = ({ size = 8, color = 'var(--text)' }) => (
-  <span
-    aria-hidden="true"
-    style={{
-      display: 'inline-block',
-      width: size,
-      height: size,
-      background: color,
-      transform: 'rotate(45deg)',
-      flexShrink: 0,
-    }}
-  />
-);
+import { Mark } from './Mark';
 
 const microLabel = {
   fontSize: 10,
@@ -84,7 +71,7 @@ export function Landing({ instruments, onLaunch, ambientMotion }) {
           }}
         >
           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10 }}>
-            <Diamond size={9} />
+            <Mark size={20} />
             <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: '0.01em' }}>
               getinvestage
             </span>

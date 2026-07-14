@@ -2,3 +2,21 @@ fastapi==0.115.12
 uvicorn[standard]==0.34.2
 httpx==0.28.1
 python-dotenv==1.1.0
+pydantic-settings==2.9.1
+email-validator==2.2.0
+
+# database
+sqlalchemy[asyncio]==2.0.41
+alembic==1.16.1
+# psycopg 3 rather than asyncpg: asyncpg has no wheel for Python 3.13+ and
+# falls back to a source build that needs MSVC. psycopg ships binary wheels
+# and SQLAlchemy drives it async via postgresql+psycopg://.
+psycopg[binary]==3.2.13  # Postgres (dev + production)
+aiosqlite==0.21.0        # SQLite (tests, and a zero-setup fallback)
+
+# shared cache + rate-limit store (Upstash in dev and prod)
+redis==8.0.1
+
+# auth
+pyjwt==2.10.1
+argon2-cffi==23.1.0

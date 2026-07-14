@@ -67,6 +67,7 @@ class MarketService:
 
     async def close(self) -> None:
         await self._client.aclose()
+        self.cache.close()
 
     async def _finnhub(self, path: str, params: dict) -> dict | list:
         resp = await self._client.get(
@@ -80,7 +81,7 @@ class MarketService:
 
     async def _cached(self, key: str, ttl: int, fetch):
         """Fresh cache hit -> return; miss -> fetch + store; error -> stale."""
-        value, fresh = self.cache.get(key)
+        value, fresh = await self.cache.get(key)
         if fresh:
             return value
         try:
@@ -90,7 +91,7 @@ class MarketService:
                 logger.warning("Serving stale %s after upstream error: %s", key, exc)
                 return value
             raise UpstreamUnavailable(str(exc)) from exc
-        self.cache.set(key, result, ttl)
+        await self.cache.set(key, result, ttl)
         return result
 
     # ---- quotes -------------------------------------------------------
@@ -210,7 +211,7 @@ class MarketService:
         symbol = symbol.upper()
         range_key = range_key.upper()
         cache_key = f"candles:{symbol}:{range_key}"
-        value, fresh = self.cache.get(cache_key)
+        value, fresh = await self.cache.get(cache_key)
         if fresh:
             return value
 
@@ -223,7 +224,7 @@ class MarketService:
                 "source": "yahoo",
                 "candles": candles,
             }
-            self.cache.set(cache_key, result, CANDLE_TTL)
+            await self.cache.set(cache_key, result, CANDLE_TTL)
             return result
         except SymbolNotFound:
             raise
@@ -249,7 +250,7 @@ class MarketService:
             "source": source,
             "candles": demo_data.synthetic_candles(symbol, range_key, anchor),
         }
-        self.cache.set(cache_key, result, CANDLE_TTL)
+        await self.cache.set(cache_key, result, CANDLE_TTL)
         return result
 
     # ---- search / profile / news ---------------------------------------

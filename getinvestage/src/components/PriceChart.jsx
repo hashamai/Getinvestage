@@ -1,16 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { fmtPct, fmtPrice, fmtVolume, useRangeSeries } from '../useMarket';
+import { microLabel } from '../styles';
 
 const RANGES = ['1D', '1W', '1M', '1Y'];
 const VB_W = 800;
 const VB_H = 300;
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
 
 function xLabels(range) {
   if (range === '1D') return ['09:30', '11:00', '12:30', '14:00', '15:30'];

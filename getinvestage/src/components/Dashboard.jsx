@@ -8,13 +8,7 @@ import { Watchlist } from './Watchlist';
 import { PriceChart } from './PriceChart';
 import { Assistant } from './Assistant';
 import { Mark } from './Mark';
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
+import { microLabel } from '../styles';
 
 function MiniQuote({ inst }) {
   return (

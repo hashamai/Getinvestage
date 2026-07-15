@@ -2,16 +2,10 @@ import { Link } from 'react-router-dom';
 import { Mark } from '../components/Mark';
 import { useAuth } from '../auth';
 import { useWatchlist } from '../useWatchlist';
+import { microLabel } from '../styles';
 
 /* /account — the proof that the persistence layer is real: sign out, come
  * back on another device, and these symbols are still here. */
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
 
 export function Account() {
   const { user, logout } = useAuth();

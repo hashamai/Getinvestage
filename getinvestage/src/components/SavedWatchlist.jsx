@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { fmtPct, fmtPrice } from '../useMarket';
 import { useQuotes } from '../useQuotes';
+import { microLabel } from '../styles';
 
 /* The signed-in user's saved symbols, with live prices.
  *
@@ -12,13 +13,6 @@ import { useQuotes } from '../useQuotes';
  */
 
 const ROW_GRID = 'minmax(80px, 1fr) 84px 66px 22px';
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
 
 export function SavedWatchlist({ items, selected, onSelect, onRemove, isAuthed }) {
   const symbols = items.map((i) => i.symbol);

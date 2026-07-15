@@ -15,14 +15,6 @@ from services.market import SymbolNotFound, UpstreamUnavailable
 
 router = APIRouter(prefix="/api", tags=["market"])
 
-# Indices shown in the top strip. Finnhub's free tier has no index quotes, so
-# liquid ETF proxies stand in and the UI labels them as such.
-INDICES = [
-    {"symbol": "SPY", "label": "S&P 500", "badge": "500"},
-    {"symbol": "QQQ", "label": "Nasdaq 100", "badge": "100"},
-    {"symbol": "DIA", "label": "Dow 30", "badge": "30"},
-]
-
 VALID_RANGES = {"1D", "1W", "1M", "3M", "1Y", "ALL"}
 
 UPSTREAM_DOWN = "Market data provider unavailable, try again shortly"
@@ -93,14 +85,3 @@ async def quotes(market: Market, symbols: str = Query(..., min_length=1, max_len
             return sym, None
 
     return dict(await asyncio.gather(*(one(s) for s in syms)))
-
-
-@router.get("/indices")
-async def indices(market: Market):
-    async def one(entry: dict):
-        try:
-            return {**entry, "quote": await market.get_quote(entry["symbol"])}
-        except (SymbolNotFound, UpstreamUnavailable):
-            return {**entry, "quote": None}
-
-    return await asyncio.gather(*(one(e) for e in INDICES))

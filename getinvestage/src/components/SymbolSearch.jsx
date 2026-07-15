@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSearch } from '../useSearch';
+import { microLabel } from '../styles';
 
 /* Reusable ticker search. Used in the dashboard watchlist panel and on the
  * Market Analysis page.
@@ -9,18 +10,10 @@ import { useSearch } from '../useSearch';
  * search box a trader won't use.
  */
 
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
-
 export function SymbolSearch({
   onSelect,
   placeholder = 'Search symbol…',
   autoFocus = false,
-  renderAction,
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -171,9 +164,6 @@ export function SymbolSearch({
                 >
                   {item.description}
                 </span>
-                {/* Lets the dashboard render a "save" affordance without this
-                    component knowing anything about watchlists. */}
-                {renderAction?.(item)}
               </div>
             ))}
         </div>

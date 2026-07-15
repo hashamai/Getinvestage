@@ -7,6 +7,7 @@ import { fmtPct, fmtPrice, fmtVolume } from '../useMarket';
 import { Mark } from '../components/Mark';
 import { SymbolSearch } from '../components/SymbolSearch';
 import { MiniChart } from '../components/MiniChart';
+import { microLabel } from '../styles';
 
 /* /analysis — Market Analysis.
  *
@@ -17,13 +18,6 @@ import { MiniChart } from '../components/MiniChart';
  * and it is exactly the kind of thing that destroys trust in a demo. Empty and
  * honest beats populated and invented.
  */
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
 
 const RANGES = ['1D', '1W', '1M', '3M', '1Y'];
 

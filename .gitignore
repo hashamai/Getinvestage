@@ -45,6 +45,11 @@ Thumbs.db
 # SQLite databases (if generated locally)
 *.sqlite3
 *.db
+*.db-shm
+*.db-wal
+
+# graphify extraction output
+graphify-out/
 
 # Claude Code sessions and skills (if you don't want them in Git)
 .claude/

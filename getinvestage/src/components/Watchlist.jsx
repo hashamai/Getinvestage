@@ -4,17 +4,11 @@ import { FLASH_THRESHOLD, fmtPct, fmtPrice } from '../useMarket';
 import { Sparkline } from './Sparkline';
 import { SymbolSearch } from './SymbolSearch';
 import { SavedWatchlist } from './SavedWatchlist';
+import { microLabel } from '../styles';
 
 // Last column is the save star; it stays in the grid (as an empty cell) for
 // signed-out users so the columns don't shift when you log in.
 const ROW_GRID = 'minmax(88px, 1.1fr) 84px 66px 76px 22px';
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
 
 /** Price cell that flashes green/red on sharp ticks, then fades back. */
 function PriceCell({ inst }) {

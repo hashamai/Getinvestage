@@ -87,10 +87,6 @@ class RedisCache:
         except (RedisError, OSError) as exc:
             logger.warning("Redis SET failed (%s) — value not cached", exc)
 
-    async def purge(self, older_than_seconds: float = STALE_TTL) -> int:
-        # Redis expires keys itself; nothing to sweep.
-        return 0
-
     def close(self) -> None:
         # The client's lifecycle is owned by core/redis.py, not by the cache.
         pass
@@ -132,25 +128,11 @@ class TTLCache:
             )
             self._conn.commit()
 
-    def _purge(self, older_than_seconds: float) -> int:
-        # Stale rows are load-bearing (serve-stale-on-error), so only genuinely
-        # ancient ones go. Without this the table grows forever.
-        with self._lock:
-            cur = self._conn.execute(
-                "DELETE FROM cache WHERE expires_at < ?",
-                (time.time() - older_than_seconds,),
-            )
-            self._conn.commit()
-            return cur.rowcount
-
     async def get(self, key: str) -> tuple[CachedValue | None, bool]:
         return await to_thread.run_sync(self._get, key)
 
     async def set(self, key: str, value: CachedValue, ttl_seconds: float) -> None:
         await to_thread.run_sync(self._set, key, value, ttl_seconds)
-
-    async def purge(self, older_than_seconds: float = STALE_TTL) -> int:
-        return await to_thread.run_sync(self._purge, older_than_seconds)
 
     def close(self) -> None:
         with self._lock:

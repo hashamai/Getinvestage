@@ -39,7 +39,7 @@ async def connect() -> Redis | None:
     """Called once at startup. Never raises: a Redis that is down at boot must
     not stop the app from booting."""
     global _client
-    if not settings.redis_enabled:
+    if not settings.redis_url:
         logger.info("REDIS_URL not set — using in-process cache and rate limiter "
                     "(correct for a single instance only)")
         return None

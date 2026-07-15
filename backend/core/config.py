@@ -37,10 +37,6 @@ class Settings(BaseSettings):
     # Upstash gives a rediss:// URL that works from a laptop and from Render.
     redis_url: str = ""
 
-    @property
-    def redis_enabled(self) -> bool:
-        return bool(self.redis_url)
-
     # --- auth ---
     # Generated per-process if unset so local dev works out of the box. In
     # production this MUST be set: a random key on each boot would invalidate

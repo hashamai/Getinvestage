@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { generateResponse } from '../assistant';
 import { Mark } from './Mark';
-
-const microLabel = {
-  fontSize: 10,
-  letterSpacing: '0.14em',
-  textTransform: 'uppercase',
-  color: 'var(--muted)',
-};
+import { microLabel } from '../styles';
 
 /* Message bullets stay a plain glyph — the full mark is reserved for the
    brand lockup and the panel header, so it doesn't get diluted. */

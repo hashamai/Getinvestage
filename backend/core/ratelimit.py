@@ -129,7 +129,6 @@ def rate_limit(limit: int, window: int, name: str):
             local.hit(key)
 
     dependency.limiter = local  # exposed so tests can reset the fallback window
-    dependency.name = name
     return dependency
 
 

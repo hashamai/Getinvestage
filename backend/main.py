@@ -13,9 +13,16 @@ production (see the lifespan guard below).
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+# Windows defaults to the Proactor event loop, which async psycopg cannot use —
+# uvicorn against Postgres would fail on the first query. No-op on Linux (prod).
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware

@@ -8,6 +8,7 @@ SQLite locally and Postgres in production.
 from __future__ import annotations
 
 import asyncio
+import sys
 from logging.config import fileConfig
 
 from alembic import context
@@ -65,4 +66,8 @@ async def run_migrations_online() -> None:
 if context.is_offline_mode():
     run_migrations_offline()
 else:
-    asyncio.run(run_migrations_online())
+    # Windows defaults to the Proactor event loop, which async psycopg cannot
+    # use. Prod (Linux) is unaffected; this only matters for running
+    # migrations against Postgres from a Windows dev box.
+    loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
+    asyncio.run(run_migrations_online(), loop_factory=loop_factory)

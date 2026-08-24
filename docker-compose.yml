@@ -1,0 +1,30 @@
+## Local development services.
+##
+## Start with:  docker compose up -d
+## Stop with:   docker compose down
+## Wipe data:   docker compose down -v
+##
+## This only runs the infrastructure (Postgres, Redis). The backend and
+## frontend are expected to run outside Docker (uvicorn / npm run dev).
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: getinvestage_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: getinvestage
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  pgdata:

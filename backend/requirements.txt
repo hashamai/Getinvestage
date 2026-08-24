@@ -19,3 +19,6 @@ redis==8.0.1
 # auth
 pyjwt==2.10.1
 argon2-cffi==23.1.0
+
+# recommendation LLM (Gemini)
+google-genai>=1.14.0

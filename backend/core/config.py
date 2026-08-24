@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     # --- market data ---
     finnhub_api_key: str = ""
 
+    # --- recommendation LLM ---
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
+    recommend_cache_ttl: int = 1200  # seconds (20 min)
+
     # --- database ---
     # Postgres in dev and prod. SQLite remains supported (tests use it, and it
     # keeps a fresh clone runnable) but is no longer the default: the app should

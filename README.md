@@ -1,95 +1,132 @@
-# Getinvestage — The market, thinking out loud.
+# Getinvestage
 
-A dark, terminal-style AI stock-market assistant for retail investors:
-a cinematic landing page and a dense live dashboard — real-time watchlist,
-self-drawing price charts, and a plain-English assistant grounded in live
-quotes. **Educational tool — not financial advice.**
+A dark, terminal-style stock market dashboard with real-time data, interactive charts, and an AI-powered recommendation engine. Built as a full-stack portfolio project.
+
+**Educational tool — not financial advice.**
 
 | Landing | Dashboard |
 |---|---|
 | ![Landing](docs/screenshots/landing.png) | ![Dashboard](docs/screenshots/dashboard.png) |
 
-## Architecture
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React 18, Vite, vanilla CSS |
+| Backend | FastAPI, Python 3.12, uvicorn |
+| Database | PostgreSQL (Neon in production) |
+| AI | Gemini 2.5 Flash (recommendations) |
+| Market Data | Finnhub + Yahoo Finance |
+| Cache | Redis (Upstash) / SQLite fallback |
+| Auth | JWT access + refresh tokens, argon2 password hashing |
+| Deployment | Docker, Render |
+
+## Features
+
+- **Live dashboard** — real-time quotes, watchlist, ticker tape
+- **Interactive charts** — self-drawing SVG candlestick/line charts with 1D to ALL range
+- **AI recommendations** — scoring-first pipeline with Gemini-backed explanations
+- **Grounded assistant** — compares tickers, explains sectors, refuses financial advice
+- **Auth system** — register/login with JWT rotation, rate limiting, server-side revocation
+- **Offline fallback** — labeled simulation mode when the backend is unreachable
+
+## Project Structure
 
 ```
-getinvestage/  React 18 + Vite (JavaScript, no UI libs)
-  src/useMarket.js      live market engine: quote polling + candle history,
-                        seeded simulation as labeled offline fallback
-  src/assistant.js      grounded response logic (compare / explain / summarize
-                        / refuse-advice) over the live quote state
-  src/components/       Landing, AmbientCanvas, Dashboard, Watchlist,
-                        PriceChart (self-drawing SVG), Assistant, TickerTape
+getinvestage/          React frontend (Vite)
+  src/
+    components/        Landing, Dashboard, Watchlist, PriceChart, Assistant, TickerTape
+    useMarket.js       Live market engine: quote polling + candle history
+    assistant.js       Grounded response logic over live quote state
 
-backend/       FastAPI — the single production server
-  main.py               /api/* routes + serves the built React app from
-                        getinvestage/dist
-  services/market.py    Finnhub (stock quotes, search, news) + Yahoo Finance
-                        chart API (candles, index quotes — the same source
-                        yfinance wraps), SQLite TTL cache, stale-on-error
+backend/               FastAPI backend
+  main.py              API routes + serves built React SPA in production
+  api/                 Route handlers (auth, watchlist, market, recommendations)
+  core/                Config, database, security, rate limiting
+  models/              SQLAlchemy models (User, WatchlistItem, RefreshToken)
+  services/            Market data service, cache, demo data, recommendations
+  alembic/             Database migrations
 ```
 
-Data policy: the browser only ever talks to FastAPI — API keys stay
-server-side. Quotes for stocks come from Finnhub (free tier); index quotes
-(^GSPC, ^IXIC) and all OHLC history come from Yahoo's chart API. If the
-backend is unreachable, the UI falls back to a seeded simulation and labels
-itself `SIMULATED — OFFLINE` in the header.
+## Setup
 
-## Run it
+### Prerequisites
 
-**1. Backend** (Python 3.12+) — serves the API *and* the built site:
+- Python 3.12+
+- Node 20+
+- Docker
 
-```powershell
+### 1. Start the database
+
+```bash
+docker compose up -d
+```
+
+This runs PostgreSQL on `localhost:5432`.
+
+### 2. Backend
+
+```bash
 cd backend
 python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
-copy .env.example .env        # put your free finnhub.io key in .env
-.venv\Scripts\python -m uvicorn main:app --port 8000
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env              # add your API keys
+alembic upgrade head              # run migrations
+uvicorn main:app --port 8000
 ```
 
-**2. Frontend build** (Node 20+):
+### 3. Frontend
 
-```powershell
+```bash
 cd getinvestage
 npm install
-npm run build                 # output lands in getinvestage/dist
+npm run dev                       # http://localhost:5174
 ```
 
-Open **http://localhost:8000** — FastAPI serves the app and the data.
+Vite proxies `/api` requests to the backend at `:8000`.
 
-For frontend development with hot reload, run `npm run dev` in
-`getinvestage/` (http://localhost:5174, proxies `/api` to the backend).
+### Production build
+
+```bash
+cd getinvestage && npm run build  # outputs to getinvestage/dist
+```
+
+FastAPI serves the built SPA from `getinvestage/dist` — open `http://localhost:8000` for the full production setup.
+
+## Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `DATABASE_URL` | Yes | PostgreSQL connection string |
+| `FINNHUB_API_KEY` | Recommended | Free at [finnhub.io](https://finnhub.io/register). Without it, the app runs in demo mode with synthetic data |
+| `GEMINI_API_KEY` | Optional | For AI recommendations. Get one at [aistudio.google.com](https://aistudio.google.com/apikey) |
+| `SECRET_KEY` | Prod only | JWT signing key. Auto-generated in dev |
+| `REDIS_URL` | Optional | Shared cache + rate limiting (Upstash). Falls back to in-process |
 
 ## API
 
 | Endpoint | Description |
 |---|---|
-| `GET /api/quotes?symbols=AAPL,^GSPC` | Batch quotes (Finnhub + Yahoo for `^` indices) |
-| `GET /api/quote/{symbol}` | Single quote (404 unknown, 503 provider down) |
-| `GET /api/candles/{symbol}?range=1D` | OHLCV history (`1D 1W 1M 3M 1Y ALL`), `source`-labeled |
-| `GET /api/search?q=` | Symbol search |
+| `GET /api/quotes?symbols=AAPL,TSLA` | Batch quotes |
+| `GET /api/quote/{symbol}` | Single quote |
+| `GET /api/candles/{symbol}?range=1D` | OHLCV chart data (1D, 1W, 1M, 3M, 1Y, ALL) |
+| `GET /api/search?q=apple` | Symbol search |
 | `GET /api/profile/{symbol}` | Company profile |
-| `GET /api/news/{symbol}` | Recent company news |
-| `GET /api/health` | Health + demo-mode flag |
+| `GET /api/news/{symbol}` | Company news |
+| `POST /api/recommend` | AI-ranked recommendations |
+| `GET /api/health` | Health check + demo mode flag |
 
-## The assistant
+## Deployment
 
-Pure function over live state — no LLM calls, no network. It compares
-tickers (tape strength + P/E read), explains single names via per-sector
-driver pools, summarizes watchlist breadth, and **refuses buy/sell
-questions**, always ending at "Educational, not advice." Answers stream in
-character-by-character; `prefers-reduced-motion` skips all animation.
+The app deploys as a single Docker container on **Render**:
 
-## Tweakables
+```
+Browser → Render (Docker) → Neon Postgres
+                           → Upstash Redis (optional)
+                           → Finnhub / Yahoo Finance
+```
 
-Set at the root in `getinvestage/src/main.jsx`:
+The [Dockerfile](Dockerfile) is multi-stage: Node builds the SPA, Python serves everything. Migrations run automatically on container start.
 
-- `accentColor` — default `#EDEDED`; presets: gold `#E8C268`, blue `#5B8CFF`, green `#4EC58F`
-- `marketTempo` — `calm` | `normal` | `volatile` (offline simulation only)
-- `ambientMotion` — toggles the landing canvas animation
-
-## Roadmap
-
-1. ~~Live dashboard with grounded assistant (this)~~
-2. LLM-backed assistant endpoint (tool-calling against the market service)
-3. RAG over news + SEC filings with cited answers
-4. Eval set + results in the README
+See [render.yaml](render.yaml) for the blueprint configuration.

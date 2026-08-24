@@ -163,6 +163,12 @@ export function Dashboard({ market, onBack, initialAsk }) {
         >
           Analysis
         </Link>
+        <Link
+          to="/recommend"
+          style={{ ...microLabel, flexShrink: 0, textDecoration: 'none', color: 'var(--text-2)' }}
+        >
+          Recommend
+        </Link>
         <AuthNav />
         <button
           onClick={onBack}

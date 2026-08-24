@@ -8,6 +8,7 @@ import { Dashboard } from './components/Dashboard';
 import { AuthForm } from './routes/AuthForm';
 import { Account } from './routes/Account';
 import { Analysis } from './routes/Analysis';
+import { Recommendations } from './components/Recommendations';
 import { NotFound } from './routes/NotFound';
 
 /**
@@ -68,6 +69,7 @@ export default function App({
 
         {/* Public: anyone can research a stock. Saving it needs an account. */}
         <Route path="/analysis" element={<Analysis />} />
+        <Route path="/recommend" element={<Recommendations />} />
 
         <Route path="/login" element={<AuthForm mode="login" />} />
         <Route path="/register" element={<AuthForm mode="register" />} />

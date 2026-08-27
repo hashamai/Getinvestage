@@ -1,0 +1,58 @@
+{
+  "condition": "grounded",
+  "generated_at": "2026-08-24T15:58:35.360438+00:00",
+  "response_time_s": 25.79,
+  "llm_response": {
+    "rankings": [
+      {
+        "symbol": "NVDA",
+        "rank": 1,
+        "explanation": "NVDA earns the top spot with the highest composite score of 75.0/100, moderate daily volatility of 2.3%, and positive momentum of +1.5% over 1M. News highlights its AI GPU leadership and potential for an \"AI upgrade supercycle,\" aligning with a medium-term growth outlook despite a higher P/E of 46.4.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "MSFT",
+        "rank": 2,
+        "explanation": "MSFT shows very strong momentum of +28.2% over 1M and positive news regarding \"strong growth\" and a \"promising technical setup.\" While it has higher daily volatility at 3.4% and a high day range (95%), its moderate P/E of 37.2 and growth prospects make it suitable for a moderate investor with a medium horizon.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "GOOGL",
+        "rank": 3,
+        "explanation": "GOOGL presents strong momentum of +9.7% over 1M, moderate daily volatility of 2.3%, and a reasonable P/E of 22.6. Positive news includes Berkshire Hathaway boosting it as a top holding and a strategic partnership with Verizon. The high day range (94%) is a minor drawback.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "AMZN",
+        "rank": 4,
+        "explanation": "AMZN exhibits strong momentum of +13.2% over 1M, but also the highest daily volatility at 3.6% and a very high day range (94%). Its P/E is 42.8, and recent news is general or cautious regarding cloud, making it a higher-risk option for a moderate investor.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "TSLA",
+        "rank": 5,
+        "explanation": "TSLA has strong momentum of +13.6% over 1M and moderate daily volatility of 2.3%. However, its very high P/E of 68.3 and mixed news, including doubts about its Cybercab launch, present higher risk for a moderate investor with a medium time horizon.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "AAPL",
+        "rank": 6,
+        "explanation": "AAPL offers the lowest daily volatility at 2.0% and a moderate P/E of 35.1. However, its negative momentum of -6.4% over 1M is a significant concern for a medium-term horizon, outweighing its lower volatility for a moderate investor.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "META",
+        "rank": 7,
+        "explanation": "META is less appealing for a moderate investor due to its negative momentum of -6.7% over 1M and a high day range (85%). While its P/E is 27.9, the negative momentum and higher daily volatility of 2.8% indicate potential short-term headwinds.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "JPM",
+        "rank": 8,
+        "explanation": "JPM has the lowest P/E of 13.8 and lowest daily volatility of 1.2%, appealing to conservative aspects. However, its weak momentum of +1.0% over 1M and low composite score of 32.2/100 make it less suitable for a moderate investor seeking growth over a medium time horizon.",
+        "confidence": "high"
+      }
+    ]
+  },
+  "prompt_char_count": 9209
+}

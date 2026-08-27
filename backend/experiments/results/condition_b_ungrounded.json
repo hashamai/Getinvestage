@@ -1,0 +1,58 @@
+{
+  "condition": "ungrounded",
+  "generated_at": "2026-08-24T15:59:01.126788+00:00",
+  "response_time_s": 22.76,
+  "llm_response": {
+    "rankings": [
+      {
+        "symbol": "NVDA",
+        "rank": 1,
+        "explanation": "NVDA is ranked first due to its highest composite score of 75.0/100, indicating a strong overall profile. It shows excellent stability with a day range score of 25.0/25 and a strong valuation score of 21.4/25, which aligns well with a moderate risk tolerance and medium time horizon.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "META",
+        "rank": 2,
+        "explanation": "META ranks second with a composite score of 60.7/100, driven by a strong momentum score of 25.0/25 and a moderate volatility score of 17.9/25. However, its lower valuation score of 7.1/25 and day range score of 10.7/25 suggest some areas of concern for a moderate investor.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "AMZN",
+        "rank": 3,
+        "explanation": "AMZN is tied for third with a composite score of 57.1/100. It boasts an excellent volatility score of 25.0/25 and a good valuation score of 17.9/25, which are favorable for a moderate risk profile. However, its low momentum score of 7.1/25 and very low day range score of 7.1/25 indicate less intraday stability.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "TSLA",
+        "rank": 4,
+        "explanation": "TSLA is tied for third with a composite score of 57.1/100. It has an excellent valuation score of 25.0/25 and a good day range score of 21.4/25. However, its very low momentum score of 3.6/25 and low volatility score of 7.1/25 make it less appealing for a moderate investor.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "AAPL",
+        "rank": 5,
+        "explanation": "AAPL has a moderate composite score of 53.6/100, with a strong momentum score of 21.4/25 and a moderate day range score of 17.9/25. However, its very low volatility score of 3.6/25 and valuation score of 10.7/25 are less ideal for a moderate risk profile.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "MSFT",
+        "rank": 6,
+        "explanation": "MSFT has a low composite score of 35.7/100. While it has moderate volatility (21.4/25) and valuation (14.3/25) scores, its very low momentum score of 0.0/25 and extremely low day range score of 0.0/25 suggest high intraday movement and poor recent performance.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "JPM",
+        "rank": 7,
+        "explanation": "JPM has a low composite score of 32.2/100. It shows moderate momentum (17.9/25) and day range (14.3/25) scores. However, extremely low volatility (0.0/25) and valuation (0.0/25) scores are significant drawbacks for a moderate investor.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "GOOGL",
+        "rank": 8,
+        "explanation": "GOOGL is ranked last with the lowest composite score of 28.6/100. It has moderate momentum (10.7/25) and volatility (10.7/25) scores. However, its extremely low valuation score of 3.6/25 and day range score of 3.6/25 indicate significant concerns for a moderate risk profile.",
+        "confidence": "high"
+      }
+    ]
+  },
+  "prompt_char_count": 3302
+}

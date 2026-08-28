@@ -234,7 +234,7 @@ async def generate_recommendation(
 
     try:
         client = genai.Client(api_key=settings.gemini_api_key)
-        response = client.models.generate_content(
+        response = await client.aio.models.generate_content(
             model=settings.gemini_model,
             contents=user_prompt,
             config=genai.types.GenerateContentConfig(

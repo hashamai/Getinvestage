@@ -39,3 +39,8 @@ services:
       # If omitted the app still boots, in demo mode with synthetic data.
       - key: FINNHUB_API_KEY
         sync: false
+
+      # GEMINI_API_KEY — free at https://aistudio.google.com/apikey
+      # Required for the /api/recommend endpoint (LLM-backed explanations).
+      - key: GEMINI_API_KEY
+        sync: false

@@ -1,0 +1,30 @@
+{
+  "generated_at": "2026-08-27T20:57:26.160932Z",
+  "modifications": {
+    "NVDA": "Changed P/E from 46.4 to 150.0 (worse valuation score)",
+    "AAPL": "Changed momentum from -6.4% to +25.0%",
+    "MSFT": "Changed momentum from +28.2% to -30.0%"
+  },
+  "llm_response": {
+    "rankings": [
+      {
+        "symbol": "AAPL",
+        "rank": 1,
+        "explanation": "Apple is recommended for a moderate investor with a medium time horizon due to its strong 1-month momentum of +25.0% and lowest daily volatility of 2.0%. Its P/E of 35.1 is also the most favorable among the candidates, balancing growth potential with a relatively lower valuation risk.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "NVDA",
+        "rank": 2,
+        "explanation": "NVIDIA shows strong positive news regarding AI leadership and high growth momentum, contributing to its highest composite score of 75.0. However, its extremely high P/E of 150.0 presents a significant valuation concern for a moderate investor, despite moderate 1-month momentum of +1.5% and 2.3% daily volatility.",
+        "confidence": "high"
+      },
+      {
+        "symbol": "MSFT",
+        "rank": 3,
+        "explanation": "Microsoft is least recommended due to its negative 1-month momentum of -30.0% and highest daily volatility of 3.4%, which are less suitable for a moderate risk profile. Its P/E of 37.2 is also the highest among the candidates, and its composite score is the lowest at 35.7.",
+        "confidence": "high"
+      }
+    ]
+  }
+}

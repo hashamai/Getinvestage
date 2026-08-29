@@ -202,15 +202,22 @@ input {
     height: 100%;
   }
   .dashboard-layout > :nth-child(1) {
-    /* Watchlist */
+    /* Watchlist Container */
     order: 2;
-    min-height: 400px;
+    height: auto;
+    flex: none;
     border-right: none !important;
+  }
+  /* Disable Watchlist internal scroll to allow native page scroll */
+  .dashboard-layout > :nth-child(1) > div:last-child {
+    overflow-y: visible !important;
+    height: auto !important;
+    flex: none !important;
   }
   .dashboard-layout > :nth-child(2) {
     /* PriceChart */
     order: 1;
-    min-height: 450px;
+    min-height: 70vh;
     flex-shrink: 0;
     border-bottom: 1px solid var(--hairline);
   }

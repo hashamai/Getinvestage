@@ -170,7 +170,7 @@ input {
 
 .dashboard-layout {
   display: grid;
-  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr) minmax(280px, 340px);
+  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
   min-height: 0;
   overflow: hidden;
 }

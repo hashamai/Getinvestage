@@ -67,7 +67,6 @@ export function Dashboard({ market, onBack, initialAsk }) {
   
   // New overlay states
   const [showNav, setShowNav] = useState(false);
-  const [showChart, setShowChart] = useState(false);
   const [showAssistant, setShowAssistant] = useState(false);
 
   const { isAuthed } = useAuth();
@@ -88,7 +87,6 @@ export function Dashboard({ market, onBack, initialAsk }) {
     const known = market.tickers.find((t) => t.symbol === sym || t.ySym === sym);
     if (known) {
       setSelected(known.symbol);
-      setShowChart(true);
     } else {
       navigate(`/analysis?symbol=${encodeURIComponent(sym)}`);
     }
@@ -181,8 +179,8 @@ export function Dashboard({ market, onBack, initialAsk }) {
 
       <TickerTape instruments={market.instruments} size="sm" />
 
-      {/* main (Watchlist occupies full screen now) */}
-      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      {/* main */}
+      <main className="dashboard-layout">
         <Watchlist
           tickers={market.tickers}
           selected={selected}
@@ -196,6 +194,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
           onRemoveSaved={(symbol) => watchlist.remove(symbol).catch(() => {})}
           isAuthed={isAuthed}
         />
+        <PriceChart inst={inst} range={range} onRangeChange={setRange} source={market.source} />
       </main>
 
       {/* --- Overlays & Modals --- */}
@@ -228,22 +227,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
         </div>
       )}
 
-      {/* Chart Modal Overlay */}
-      {showChart && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', padding: 16 }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: 900, maxHeight: '90vh', background: 'var(--bg)', border: '1px solid var(--hairline)', borderRadius: 8, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-            <button 
-              onClick={() => setShowChart(false)} 
-              style={{ position: 'absolute', top: 12, right: 16, fontSize: 18, color: 'var(--text-2)', zIndex: 10 }}
-            >
-              ✕
-            </button>
-            <div style={{ flex: 1, overflowY: 'auto' }}>
-              <PriceChart inst={inst} range={range} onRangeChange={setRange} source={market.source} />
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Floating Assistant Button */}
       <button

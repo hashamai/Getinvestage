@@ -89,6 +89,7 @@ export function Watchlist({
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
+        borderRight: '1px solid var(--hairline)',
       }}
     >
       {/* Search sits at the top of the panel: it's the entry point for adding

@@ -64,6 +64,12 @@ function AuthNav() {
 export function Dashboard({ market, onBack, initialAsk }) {
   const [selected, setSelected] = useState('NVDA');
   const [range, setRange] = useState('1D');
+  
+  // New overlay states
+  const [showNav, setShowNav] = useState(false);
+  const [showChart, setShowChart] = useState(false);
+  const [showAssistant, setShowAssistant] = useState(false);
+
   const { isAuthed } = useAuth();
   const watchlist = useWatchlist();
   const navigate = useNavigate();
@@ -80,16 +86,20 @@ export function Dashboard({ market, onBack, initialAsk }) {
     // outside the known universe goes to /analysis, which is built for
     // arbitrary symbols and fetches real candles for them.
     const known = market.tickers.find((t) => t.symbol === sym || t.ySym === sym);
-    if (known) setSelected(known.symbol);
-    else navigate(`/analysis?symbol=${encodeURIComponent(sym)}`);
+    if (known) {
+      setSelected(known.symbol);
+      setShowChart(true);
+    } else {
+      navigate(`/analysis?symbol=${encodeURIComponent(sym)}`);
+    }
   };
 
   return (
     <div
       style={{
         height: '100vh',
-        display: 'grid',
-        gridTemplateRows: 'auto auto 1fr',
+        display: 'flex',
+        flexDirection: 'column',
         overflow: 'hidden',
       }}
     >
@@ -111,6 +121,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
             flexShrink: 0,
             color: market.source === 'live' ? 'var(--text-2)' : 'var(--muted)',
           }}
+          className="hide-on-mobile"
           title={
             market.source === 'live'
               ? 'Quotes and history from the market data backend (Finnhub + Yahoo Finance)'
@@ -135,7 +146,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
               animation: 'pulseDot 2s ease-in-out infinite',
             }}
           />
-          <span style={{ ...microLabel, color: statusColor }}>{market.status.label}</span>
+          <span style={{ ...microLabel, color: statusColor }} className="hide-on-mobile">{market.status.label}</span>
         </span>
         <span
           style={{
@@ -144,43 +155,34 @@ export function Dashboard({ market, onBack, initialAsk }) {
             color: 'var(--text-2)',
             flexShrink: 0,
           }}
+          className="hide-on-mobile"
         >
           {clock}
         </span>
-        <Link
-          to="/analysis"
-          style={{ ...microLabel, flexShrink: 0, textDecoration: 'none', color: 'var(--text-2)' }}
-        >
-          Analysis
-        </Link>
-        <Link
-          to="/recommend"
-          style={{ ...microLabel, flexShrink: 0, textDecoration: 'none', color: 'var(--text-2)' }}
-        >
-          Recommend
-        </Link>
-        <AuthNav />
         <button
-          onClick={onBack}
+          onClick={() => setShowNav(true)}
           style={{
             flexShrink: 0,
             padding: '8px 12px',
-            fontSize: 11.5,
+            fontSize: 18,
             color: 'var(--text-2)',
-            border: '1px solid var(--hairline)',
+            border: 'none',
+            background: 'transparent',
+            cursor: 'pointer',
             transition: 'color 140ms ease',
           }}
           onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text)')}
           onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--text-2)')}
+          title="Menu"
         >
-          ← site
+          ☰
         </button>
       </header>
 
       <TickerTape instruments={market.instruments} size="sm" />
 
-      {/* main */}
-      <main className="dashboard-layout">
+      {/* main (Watchlist occupies full screen now) */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Watchlist
           tickers={market.tickers}
           selected={selected}
@@ -194,9 +196,111 @@ export function Dashboard({ market, onBack, initialAsk }) {
           onRemoveSaved={(symbol) => watchlist.remove(symbol).catch(() => {})}
           isAuthed={isAuthed}
         />
-        <PriceChart inst={inst} range={range} onRangeChange={setRange} source={market.source} />
-        <Assistant market={market} selectedSymbol={selected} initialAsk={initialAsk} />
       </main>
+
+      {/* --- Overlays & Modals --- */}
+      
+      {/* Side Navigation Overlay */}
+      {showNav && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex' }}>
+          <div style={{ flex: 1, background: 'rgba(0,0,0,0.5)' }} onClick={() => setShowNav(false)} />
+          <div style={{ width: 280, background: 'var(--bg)', borderLeft: '1px solid var(--hairline)', padding: '24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <button 
+              onClick={() => setShowNav(false)} 
+              style={{ alignSelf: 'flex-end', fontSize: 24, padding: 0, color: 'var(--text-2)' }}
+            >
+              ✕
+            </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <Link to="/analysis" style={{ textDecoration: 'none', color: 'var(--text)', fontSize: 16 }}>Analysis</Link>
+              <Link to="/recommend" style={{ textDecoration: 'none', color: 'var(--text)', fontSize: 16 }}>Recommendations</Link>
+              <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--hairline)' }}>
+                <AuthNav />
+              </div>
+              <button 
+                onClick={onBack} 
+                style={{ textAlign: 'left', padding: 0, color: 'var(--text-2)', fontSize: 14, marginTop: 16 }}
+              >
+                ← Return to site
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Chart Modal Overlay */}
+      {showChart && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 90, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', padding: 16 }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: 900, maxHeight: '90vh', background: 'var(--bg)', border: '1px solid var(--hairline)', borderRadius: 8, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <button 
+              onClick={() => setShowChart(false)} 
+              style={{ position: 'absolute', top: 12, right: 16, fontSize: 18, color: 'var(--text-2)', zIndex: 10 }}
+            >
+              ✕
+            </button>
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              <PriceChart inst={inst} range={range} onRangeChange={setRange} source={market.source} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Assistant Button */}
+      <button
+        onClick={() => setShowAssistant(!showAssistant)}
+        style={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          width: 56,
+          height: 56,
+          borderRadius: '50%',
+          background: 'var(--accent)',
+          color: '#0a0b0d',
+          fontSize: 24,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
+          zIndex: 80,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'transform 0.2s ease',
+          transform: showAssistant ? 'scale(0.9)' : 'scale(1)',
+        }}
+        title="Open AI Assistant"
+      >
+        💬
+      </button>
+
+      {/* Floating Assistant Window */}
+      {showAssistant && (
+        <div 
+          style={{ 
+            position: 'fixed', 
+            bottom: 96, 
+            right: 24, 
+            width: 360, 
+            height: 540, 
+            maxHeight: 'calc(100vh - 120px)', 
+            maxWidth: 'calc(100vw - 48px)',
+            background: 'var(--bg)', 
+            border: '1px solid var(--hairline)', 
+            borderRadius: 8, 
+            zIndex: 80, 
+            display: 'flex', 
+            flexDirection: 'column', 
+            overflow: 'hidden', 
+            boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+            animation: 'riseIn 0.3s cubic-bezier(0.2, 0.7, 0.2, 1)'
+          }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 12px', borderBottom: '1px solid var(--hairline)' }}>
+            <button onClick={() => setShowAssistant(false)} style={{ color: 'var(--text-2)' }}>✕ close</button>
+          </div>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            <Assistant market={market} selectedSymbol={selected} initialAsk={initialAsk} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

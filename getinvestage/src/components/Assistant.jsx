@@ -136,7 +136,6 @@ export function Assistant({ market, selectedSymbol, initialAsk }) {
         display: 'flex',
         flexDirection: 'column',
         minHeight: 0,
-        borderLeft: '1px solid var(--hairline)',
       }}
     >
       <div

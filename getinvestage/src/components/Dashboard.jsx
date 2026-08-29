@@ -94,17 +94,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
       }}
     >
       {/* header */}
-      <header
-        style={{
-          height: 52,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 20,
-          padding: '0 18px',
-          borderBottom: '1px solid var(--hairline)',
-          minWidth: 0,
-        }}
-      >
+      <header className="app-header">
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <Mark size={19} />
           <span style={{ fontSize: 14, fontWeight: 600 }}>getinvestage</span>
@@ -190,14 +180,7 @@ export function Dashboard({ market, onBack, initialAsk }) {
       <TickerTape instruments={market.instruments} size="sm" />
 
       {/* main */}
-      <main
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(300px, 390px) minmax(0, 1fr) minmax(280px, 340px)',
-          minHeight: 0,
-          overflow: 'hidden',
-        }}
-      >
+      <main className="dashboard-layout">
         <Watchlist
           tickers={market.tickers}
           selected={selected}

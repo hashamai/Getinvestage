@@ -160,3 +160,51 @@ input {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ---- Responsive Utilities --------------------------------------- */
+
+.responsive-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr) minmax(280px, 340px);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-header {
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 18px;
+  border-bottom: 1px solid var(--hairline);
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+.app-header::-webkit-scrollbar {
+  display: none;
+}
+.app-header {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    overflow-y: auto;
+    min-height: unset;
+  }
+  .dashboard-layout > * {
+    min-height: 400px; /* Ensure sections don't collapse */
+  }
+  .hide-on-mobile {
+    display: none !important;
+  }
+}

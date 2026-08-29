@@ -6,15 +6,6 @@ import { microLabel } from '../styles';
 
 /* ---- shared style fragments ------------------------------------------ */
 
-const headerBar = {
-  height: 52,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 16,
-  padding: '0 18px',
-  borderBottom: '1px solid var(--hairline)',
-};
-
 const pillBtn = (active) => ({
   padding: '6px 14px',
   fontSize: 11,
@@ -310,7 +301,7 @@ export function Recommendations() {
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
       {/* header */}
-      <header style={headerBar}>
+      <header className="app-header">
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
           <Mark size={19} />
           <span style={{ fontSize: 14, fontWeight: 600 }}>getinvestage</span>
@@ -386,7 +377,7 @@ export function Recommendations() {
               <span style={{ ...microLabel, display: 'block', marginBottom: 8 }}>
                 Risk Tolerance
               </span>
-              <div style={{ display: 'flex', gap: 4 }}>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {RISK_OPTIONS.map((r) => (
                   <button
                     key={r}
@@ -408,7 +399,7 @@ export function Recommendations() {
               <span style={{ ...microLabel, display: 'block', marginBottom: 8 }}>
                 Time Horizon
               </span>
-              <div style={{ display: 'flex', gap: 4 }}>
+              <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                 {HORIZON_OPTIONS.map((h) => (
                   <button
                     key={h}

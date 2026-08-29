@@ -139,16 +139,7 @@ export function Analysis() {
 
   return (
     <div style={{ minHeight: '100vh', paddingBottom: 60 }}>
-      <header
-        style={{
-          height: 52,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          padding: '0 18px',
-          borderBottom: '1px solid var(--hairline)',
-        }}
-      >
+      <header className="app-header">
         <Link
           to="/"
           style={{
@@ -279,7 +270,7 @@ export function Analysis() {
 
             {/* --- chart --- */}
             <section style={{ padding: '18px 0' }}>
-              <div style={{ display: 'flex', gap: 6, marginBottom: 12 }}>
+              <div style={{ display: 'flex', gap: 6, marginBottom: 12, flexWrap: 'wrap' }}>
                 {RANGES.map((r) => (
                   <button
                     key={r}

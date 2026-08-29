@@ -77,7 +77,7 @@ export function Landing({ instruments, onLaunch, ambientMotion }) {
             </span>
           </span>
           <span style={{ flex: 1 }} />
-          <span style={microLabel}>RETAIL · LIVE DATA · PLAIN ENGLISH</span>
+          <span className="hide-on-mobile" style={microLabel}>RETAIL · LIVE DATA · PLAIN ENGLISH</span>
           <button
             onClick={() => onLaunch()}
             style={{

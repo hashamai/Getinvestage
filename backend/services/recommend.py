@@ -17,6 +17,7 @@ import re
 from datetime import datetime, timezone
 from typing import Any
 
+# pyrefly: ignore [missing-import]
 from google import genai
 
 from core.config import settings

@@ -196,13 +196,23 @@ input {
 
 @media (max-width: 1024px) {
   .dashboard-layout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
-    min-height: unset;
+    height: 100%;
   }
-  .dashboard-layout > * {
-    min-height: 400px; /* Ensure sections don't collapse */
+  .dashboard-layout > :nth-child(1) {
+    /* Watchlist */
+    order: 2;
+    min-height: 400px;
+    border-right: none !important;
+  }
+  .dashboard-layout > :nth-child(2) {
+    /* PriceChart */
+    order: 1;
+    min-height: 450px;
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--hairline);
   }
   .hide-on-mobile {
     display: none !important;
